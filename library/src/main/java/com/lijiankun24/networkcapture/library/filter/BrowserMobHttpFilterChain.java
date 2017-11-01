@@ -1,5 +1,6 @@
-package com.lijiankun24.networkcapture.library;
+package com.lijiankun24.networkcapture.library.filter;
 
+import com.lijiankun24.networkcapture.library.proxy.BrowserMobProxyServer;
 import com.lijiankun24.networkcapture.library.util.L;
 
 import org.littleshoot.proxy.HttpFilters;

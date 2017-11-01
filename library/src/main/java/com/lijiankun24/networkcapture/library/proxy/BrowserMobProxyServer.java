@@ -1,7 +1,8 @@
-package com.lijiankun24.networkcapture.library;
+package com.lijiankun24.networkcapture.library.proxy;
 
 import org.littleshoot.proxy.HttpFiltersSource;
 
+import java.net.InetAddress;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -11,7 +12,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * Created by lijiankun on 17/10/30.
  */
 
-public class BrowserMobProxyServer {
+public class BrowserMobProxyServer implements BrowserMobProxy{
 
     /**
      * The list of filterFactories that will generate the filters that implement browsermob-proxy behavior.
@@ -20,5 +21,30 @@ public class BrowserMobProxyServer {
 
     public List<HttpFiltersSource> getFilterFactories() {
         return filterFactories;
+    }
+
+    @Override
+    public void start() {
+
+    }
+
+    @Override
+    public void start(int port) {
+
+    }
+
+    @Override
+    public void start(int port, InetAddress bindAddress) {
+
+    }
+
+    @Override
+    public void start(int port, InetAddress clientBindAddress, InetAddress serverBindAddress) {
+
+    }
+
+    @Override
+    public void stop() {
+
     }
 }

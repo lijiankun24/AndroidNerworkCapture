@@ -5,8 +5,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 
-import com.lijiankun24.networkcapture.library.BrowserMobHttpFilterChain;
-import com.lijiankun24.networkcapture.library.BrowserMobProxyServer;
+import com.lijiankun24.networkcapture.library.filter.BrowserMobHttpFilterChain;
+import com.lijiankun24.networkcapture.library.proxy.BrowserMobProxyServer;
 
 import org.littleshoot.proxy.HttpFilters;
 import org.littleshoot.proxy.HttpFiltersSourceAdapter;
