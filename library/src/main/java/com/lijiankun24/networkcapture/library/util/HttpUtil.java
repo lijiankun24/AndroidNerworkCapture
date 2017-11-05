@@ -62,4 +62,24 @@ public class HttpUtil {
             return null;
         }
     }
+
+    public static String getHostFromRequest(HttpRequest httpRequest) {
+        // try to use the URI from the request first, if the URI starts with http:// or https://. checking for http/https avoids confusing
+        // java's URI class when the request is for a malformed URL like '//some-resource'.
+        String host = null;
+        if (startsWithHttpOrHttps(httpRequest.getUri())) {
+            try {
+                URI uri = new URI(httpRequest.getUri());
+                host = uri.getHost();
+            } catch (URISyntaxException e) {
+            }
+        }
+
+        // if there was no host in the URI, attempt to grab the host from the Host header
+        if (host == null || host.isEmpty()) {
+            host = parseHostHeader(httpRequest, false);
+        }
+
+        return host;
+    }
 }

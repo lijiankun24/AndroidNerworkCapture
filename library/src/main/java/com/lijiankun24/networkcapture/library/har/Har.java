@@ -8,20 +8,20 @@ package com.lijiankun24.networkcapture.library.har;
 
 public class Har {
 
-    private HarLog mHarLog = null;
+    private volatile HarLog log;
 
     public Har() {
     }
 
-    public Har(HarLog harLog) {
-        mHarLog = harLog;
+    public Har(HarLog log) {
+        this.log = log;
     }
 
-    public HarLog getHarLog() {
-        return mHarLog;
+    public HarLog getLog() {
+        return log;
     }
 
-    public void setHarLog(HarLog harLog) {
-        mHarLog = harLog;
+    public void setLog(HarLog log) {
+        this.log = log;
     }
 }

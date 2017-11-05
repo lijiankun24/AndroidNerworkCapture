@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -14,4 +15,23 @@
         android:gravity="center"
         android:text="Hello World!"
         android:textColor="@android:color/white"/>
+
+    <com.lijiankun24.shadowlayout.ShadowLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/tv"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="30dp"
+        app:shadowColor="#66000000"
+        app:shadowDx="0dp"
+        app:shadowDy="0dp"
+        app:shadowRadius="20dp"
+        app:shadowSide="all">
+
+        <ImageView
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:contentDescription="@null"
+            android:src="@mipmap/ic_launcher"/>
+    </com.lijiankun24.shadowlayout.ShadowLayout>
 </RelativeLayout>

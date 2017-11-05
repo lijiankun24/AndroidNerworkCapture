@@ -51,4 +51,5 @@ public class HttpConnectHarCaptureFilter extends HttpsAwareFiltersAdapter {
     public static HttpConnectTiming consumeConnectTimingForConnection(InetSocketAddress clientAddress) {
         return httpConnectTimes.remove(clientAddress);
     }
+
 }

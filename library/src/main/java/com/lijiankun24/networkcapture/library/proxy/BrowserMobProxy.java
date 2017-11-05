@@ -1,5 +1,7 @@
 package com.lijiankun24.networkcapture.library.proxy;
 
+import com.lijiankun24.networkcapture.library.har.Har;
+
 import java.net.InetAddress;
 
 /**
@@ -19,4 +21,20 @@ public interface BrowserMobProxy {
     void start(int port, InetAddress clientBindAddress, InetAddress serverBindAddress);
 
     void stop();
+
+    Har newHar();
+
+    Har newHar(String initialPageRef);
+
+    Har newHar(String initialPageRef, String initialPageTitle);
+
+    Har getHar();
+
+    Har newPage();
+
+    Har newPage(String pageRef);
+
+    Har newPage(String pageRef, String pageTitle);
+
+    Har endHar();
 }

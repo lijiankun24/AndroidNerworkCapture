@@ -26,6 +26,7 @@ dependencies {
     })
     compile 'com.android.support:appcompat-v7:26.+'
     compile 'com.squareup.okhttp3:okhttp:3.8.0'
+    compile 'com.lijiankun24:shadowlayout:1.0.0'
     testCompile 'junit:junit:4.12'
     compile project(':library')
 }

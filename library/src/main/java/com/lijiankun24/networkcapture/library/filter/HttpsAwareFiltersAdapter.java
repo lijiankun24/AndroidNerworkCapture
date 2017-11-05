@@ -1,5 +1,6 @@
 package com.lijiankun24.networkcapture.library.filter;
 
+import com.google.common.net.HostAndPort;
 import com.lijiankun24.networkcapture.library.util.BrowserMobHttpUtil;
 import com.lijiankun24.networkcapture.library.util.HttpUtil;
 
@@ -78,5 +79,16 @@ public class HttpsAwareFiltersAdapter extends HttpFiltersAdapter {
         } else {
             return isHttps;
         }
+    }
+
+    public String getHost(HttpRequest modifiedRequest) {
+        String serverHost;
+        if (isHttps()) {
+            HostAndPort hostAndPort = HostAndPort.fromString(getHttpsRequestHostAndPort());
+            serverHost = hostAndPort.getHostText();
+        } else {
+            serverHost = HttpUtil.getHostFromRequest(modifiedRequest);
+        }
+        return serverHost;
     }
 }

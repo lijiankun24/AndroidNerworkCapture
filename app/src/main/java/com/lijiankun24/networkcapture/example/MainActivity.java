@@ -30,7 +30,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        initProxy();
+//        initProxy();
         mHttpClient = new OkHttpClient();
         findViewById(R.id.tv).setOnClickListener(new View.OnClickListener() {
             @Override
