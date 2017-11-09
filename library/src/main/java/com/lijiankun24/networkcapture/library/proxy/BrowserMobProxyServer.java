@@ -1,5 +1,6 @@
 package com.lijiankun24.networkcapture.library.proxy;
 
+import com.lijiankun24.networkcapture.library.filter.BrowserMobHttpFilterChain;
 import com.lijiankun24.networkcapture.library.filter.HarCaptureFilter;
 import com.lijiankun24.networkcapture.library.filter.HttpConnectHarCaptureFilter;
 import com.lijiankun24.networkcapture.library.har.Har;
@@ -10,6 +11,9 @@ import com.lijiankun24.networkcapture.library.har.HarPage;
 import org.littleshoot.proxy.HttpFilters;
 import org.littleshoot.proxy.HttpFiltersSource;
 import org.littleshoot.proxy.HttpFiltersSourceAdapter;
+import org.littleshoot.proxy.HttpProxyServer;
+import org.littleshoot.proxy.HttpProxyServerBootstrap;
+import org.littleshoot.proxy.impl.DefaultHttpProxyServer;
 import org.littleshoot.proxy.impl.ProxyUtils;
 
 import java.net.InetAddress;
@@ -42,10 +46,11 @@ public class BrowserMobProxyServer implements BrowserMobProxy {
 
     private static final HarNameVersion HAR_CREATOR_VERSION = new HarNameVersion("BrowserMob Proxy", BrowserMobProxyUtil.getVersionString());
 
-
     private volatile HarPage currentHarPage;
 
     private volatile Har har;
+
+    private volatile HttpProxyServer proxyServer;
 
     @Override
     public void start() {
@@ -64,7 +69,24 @@ public class BrowserMobProxyServer implements BrowserMobProxy {
 
     @Override
     public void start(int port, InetAddress clientBindAddress, InetAddress serverBindAddress) {
+        HttpProxyServerBootstrap bootstrap = DefaultHttpProxyServer.bootstrap()
+                .withFiltersSource(new HttpFiltersSource() {
+                    @Override
+                    public HttpFilters filterRequest(HttpRequest originalRequest, ChannelHandlerContext ctx) {
+                        return new BrowserMobHttpFilterChain(originalRequest, ctx, BrowserMobProxyServer.this);
+                    }
 
+                    @Override
+                    public int getMaximumRequestBufferSizeInBytes() {
+                        return 2048;
+                    }
+
+                    @Override
+                    public int getMaximumResponseBufferSizeInBytes() {
+                        return 2048;
+                    }
+                });
+        proxyServer = bootstrap.start();
     }
 
     @Override
