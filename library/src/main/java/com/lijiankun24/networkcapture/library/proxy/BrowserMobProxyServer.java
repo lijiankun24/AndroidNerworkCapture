@@ -1,5 +1,7 @@
 package com.lijiankun24.networkcapture.library.proxy;
 
+import android.util.Log;
+
 import com.lijiankun24.networkcapture.library.filter.BrowserMobHttpFilterChain;
 import com.lijiankun24.networkcapture.library.filter.HarCaptureFilter;
 import com.lijiankun24.networkcapture.library.filter.HttpConnectHarCaptureFilter;
@@ -7,6 +9,7 @@ import com.lijiankun24.networkcapture.library.har.Har;
 import com.lijiankun24.networkcapture.library.har.HarLog;
 import com.lijiankun24.networkcapture.library.har.HarNameVersion;
 import com.lijiankun24.networkcapture.library.har.HarPage;
+import com.lijiankun24.networkcapture.library.util.L;
 
 import org.littleshoot.proxy.HttpFilters;
 import org.littleshoot.proxy.HttpFiltersSource;
@@ -17,8 +20,10 @@ import org.littleshoot.proxy.impl.DefaultHttpProxyServer;
 import org.littleshoot.proxy.impl.ProxyUtils;
 
 import java.net.InetAddress;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -34,7 +39,7 @@ import io.netty.handler.codec.http.HttpRequest;
 
 public class BrowserMobProxyServer implements BrowserMobProxy {
 
-    private final AtomicBoolean harCaptureFilterEnabled = new AtomicBoolean(false);
+    private final AtomicBoolean harCaptureFilterEnabled = new AtomicBoolean(true);
 
     private final AtomicInteger harPageCount = new AtomicInteger(0);
 
@@ -59,7 +64,7 @@ public class BrowserMobProxyServer implements BrowserMobProxy {
 
     @Override
     public void start(int port) {
-
+        this.start(port, null, null);
     }
 
     @Override
@@ -70,23 +75,19 @@ public class BrowserMobProxyServer implements BrowserMobProxy {
     @Override
     public void start(int port, InetAddress clientBindAddress, InetAddress serverBindAddress) {
         HttpProxyServerBootstrap bootstrap = DefaultHttpProxyServer.bootstrap()
-                .withFiltersSource(new HttpFiltersSource() {
+                .withPort(port)
+                .withFiltersSource(new HttpFiltersSourceAdapter() {
+
                     @Override
                     public HttpFilters filterRequest(HttpRequest originalRequest, ChannelHandlerContext ctx) {
+                        Log.i("lijk", "filterRequest 2 ");
                         return new BrowserMobHttpFilterChain(originalRequest, ctx, BrowserMobProxyServer.this);
-                    }
-
-                    @Override
-                    public int getMaximumRequestBufferSizeInBytes() {
-                        return 2048;
-                    }
-
-                    @Override
-                    public int getMaximumResponseBufferSizeInBytes() {
-                        return 2048;
                     }
                 });
         proxyServer = bootstrap.start();
+        String time = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.CHINA)
+                .format(new Date(System.currentTimeMillis()));
+        this.newHar(time);
     }
 
     @Override
@@ -106,17 +107,16 @@ public class BrowserMobProxyServer implements BrowserMobProxy {
 
     @Override
     public Har newHar(String initialPageRef, String initialPageTitle) {
-        Har oldHar = getHar();
+        this.har = new Har(new HarLog(HAR_CREATOR_VERSION, this));
 
         addHarCaptureFilter();
 
         harPageCount.set(0);
 
-        this.har = new Har(new HarLog(HAR_CREATOR_VERSION, this));
 
         newPage(initialPageRef, initialPageTitle);
 
-        return oldHar;
+        return this.har;
     }
 
     @Override
@@ -193,38 +193,38 @@ public class BrowserMobProxyServer implements BrowserMobProxy {
     }
 
     protected void addHarCaptureFilter() {
-        if (harCaptureFilterEnabled.compareAndSet(false, true)) {
-            // the HAR capture filter is (relatively) expensive, so only enable it when a HAR is being captured. furthermore,
-            // restricting the HAR capture filter to requests where the HAR exists, as well as  excluding HTTP CONNECTs
-            // from the HAR capture filter, greatly simplifies the filter code.
-            addHttpFilterFactory(new HttpFiltersSourceAdapter() {
-                @Override
-                public HttpFilters filterRequest(HttpRequest originalRequest, ChannelHandlerContext ctx) {
-                    Har har = getHar();
-                    if (har != null && !ProxyUtils.isCONNECT(originalRequest)) {
-                        return new HarCaptureFilter(originalRequest, ctx, har);
-                    } else {
-                        return null;
-                    }
+        // the HAR capture filter is (relatively) expensive, so only enable it when a HAR is being captured. furthermore,
+        // restricting the HAR capture filter to requests where the HAR exists, as well as  excluding HTTP CONNECTs
+        // from the HAR capture filter, greatly simplifies the filter code.
+        addHttpFilterFactory(new HttpFiltersSourceAdapter() {
+            @Override
+            public HttpFilters filterRequest(HttpRequest originalRequest, ChannelHandlerContext ctx) {
+                Har har = getHar();
+                L.i("" + (har != null && !ProxyUtils.isCONNECT(originalRequest)));
+                if (har != null && !ProxyUtils.isCONNECT(originalRequest)) {
+                    return new HarCaptureFilter(originalRequest, ctx, har);
+                } else {
+                    return null;
                 }
-            });
+            }
+        });
 
-            // HTTP CONNECTs are a special case, since they require special timing and error handling
-            addHttpFilterFactory(new HttpFiltersSourceAdapter() {
-                @Override
-                public HttpFilters filterRequest(HttpRequest originalRequest, ChannelHandlerContext ctx) {
-                    Har har = getHar();
-                    if (har != null && ProxyUtils.isCONNECT(originalRequest)) {
-                        return new HttpConnectHarCaptureFilter(originalRequest, ctx, har, getCurrentHarPage() == null ? null : getCurrentHarPage().getId());
-                    } else {
-                        return null;
-                    }
+        // HTTP CONNECTs are a special case, since they require special timing and error handling
+        addHttpFilterFactory(new HttpFiltersSourceAdapter() {
+            @Override
+            public HttpFilters filterRequest(HttpRequest originalRequest, ChannelHandlerContext ctx) {
+                Har har = getHar();
+                if (har != null && ProxyUtils.isCONNECT(originalRequest)) {
+                    return new HttpConnectHarCaptureFilter(originalRequest, ctx, har, getCurrentHarPage() == null ? null : getCurrentHarPage().getId());
+                } else {
+                    return null;
                 }
-            });
-        }
+            }
+        });
     }
 
     public void addHttpFilterFactory(HttpFiltersSource filterFactory) {
         filterFactories.add(filterFactory);
+        L.i("size is " + filterFactories.size());
     }
 }

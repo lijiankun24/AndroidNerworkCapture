@@ -50,7 +50,19 @@ public class BrowserMobHttpFilterChain extends HttpFiltersAdapter {
 
     @Override
     public HttpResponse clientToProxyRequest(HttpObject httpObject) {
-        L.i("clientToProxyRequest");
+        for (HttpFilters filter : mFiltersList) {
+            try {
+                HttpResponse filterResponse = filter.clientToProxyRequest(httpObject);
+                if (filterResponse != null) {
+                    // if we are short-circuiting the response to an HttpRequest, update ModifiedRequestAwareFilter instances
+                    // with this (possibly) modified HttpRequest before returning the short-circuit response
+
+                    return filterResponse;
+                }
+            } catch (RuntimeException e) {
+                L.w("Filter in filter chain threw exception. Filter method may have been aborted." + e.getMessage());
+            }
+        }
         return super.clientToProxyRequest(httpObject);
     }
 
