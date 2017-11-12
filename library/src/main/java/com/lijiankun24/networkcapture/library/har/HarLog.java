@@ -19,8 +19,8 @@ public class HarLog {
     private final String version = "1.2";
     private volatile HarNameVersion creator  = new HarNameVersion("BrowserMob Proxy", BrowserMobProxyUtil.getVersionString());
     private volatile HarNameVersion browser;
-    private List<HarPage> pages = new CopyOnWriteArrayList<HarPage>();
-    private List<HarEntry> entries = new CopyOnWriteArrayList<HarEntry>();
+    private List<HarPage> pages = new CopyOnWriteArrayList<>();
+    private List<HarEntry> entries = new CopyOnWriteArrayList<>();
     private volatile String comment = "";
     private BrowserMobProxyServer server;
 

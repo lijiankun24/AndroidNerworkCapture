@@ -25,6 +25,10 @@ public class HttpConnectHarCaptureFilter extends HttpsAwareFiltersAdapter {
 
     private static final int HTTP_CONNECT_TIMING_CONCURRENCY_LEVEL = 50;
 
+    private final HttpConnectTiming httpConnectTiming;
+
+    private final InetSocketAddress clientAddress;
+
     private final Har har;
 
     private static final ConcurrentMap<InetSocketAddress, HttpConnectTiming> httpConnectTimes =
@@ -46,6 +50,9 @@ public class HttpConnectHarCaptureFilter extends HttpsAwareFiltersAdapter {
         }
 
         this.har = har;
+        clientAddress = (InetSocketAddress) ctx.channel().remoteAddress();
+        httpConnectTiming = new HttpConnectTiming();
+        httpConnectTimes.put(clientAddress, httpConnectTiming);
     }
 
     public static HttpConnectTiming consumeConnectTimingForConnection(InetSocketAddress clientAddress) {

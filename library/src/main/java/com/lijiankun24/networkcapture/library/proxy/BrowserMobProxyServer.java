@@ -20,6 +20,7 @@ import org.littleshoot.proxy.impl.DefaultHttpProxyServer;
 import org.littleshoot.proxy.impl.ProxyUtils;
 
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -74,6 +75,13 @@ public class BrowserMobProxyServer implements BrowserMobProxy {
 
     @Override
     public void start(int port, InetAddress clientBindAddress, InetAddress serverBindAddress) {
+        InetSocketAddress clientBindSocket;
+        if (clientBindAddress == null) {
+            // if no client bind address was specified, bind to the wildcard address
+            clientBindSocket = new InetSocketAddress(port);
+        } else {
+            clientBindSocket = new InetSocketAddress(clientBindAddress, port);
+        }
         HttpProxyServerBootstrap bootstrap = DefaultHttpProxyServer.bootstrap()
                 .withPort(port)
                 .withFiltersSource(new HttpFiltersSourceAdapter() {
@@ -83,7 +91,8 @@ public class BrowserMobProxyServer implements BrowserMobProxy {
                         Log.i("lijk", "filterRequest 2 ");
                         return new BrowserMobHttpFilterChain(originalRequest, ctx, BrowserMobProxyServer.this);
                     }
-                });
+                })
+                .withAddress(clientBindSocket);
         proxyServer = bootstrap.start();
         String time = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.CHINA)
                 .format(new Date(System.currentTimeMillis()));
@@ -108,14 +117,9 @@ public class BrowserMobProxyServer implements BrowserMobProxy {
     @Override
     public Har newHar(String initialPageRef, String initialPageTitle) {
         this.har = new Har(new HarLog(HAR_CREATOR_VERSION, this));
-
         addHarCaptureFilter();
-
         harPageCount.set(0);
-
-
         newPage(initialPageRef, initialPageTitle);
-
         return this.har;
     }
 
@@ -144,10 +148,8 @@ public class BrowserMobProxyServer implements BrowserMobProxy {
 
         if (currentHarPage != null) {
             String currentPageRef = currentHarPage.getId();
-
             // end the previous page, so that page-wide timings are populated
             endPage();
-
             // the interface requires newPage() to return the Har as it was immediately after the previous page was ended.
             endOfPageHar = BrowserMobProxyUtil.copyHarThroughPageRef(har, currentPageRef);
         }
