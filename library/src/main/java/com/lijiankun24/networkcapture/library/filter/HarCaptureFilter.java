@@ -11,6 +11,7 @@ import com.lijiankun24.networkcapture.library.har.HarNameValuePair;
 import com.lijiankun24.networkcapture.library.har.HarRequest;
 import com.lijiankun24.networkcapture.library.har.HarResponse;
 import com.lijiankun24.networkcapture.library.util.BrowserMobHttpUtil;
+import com.lijiankun24.networkcapture.library.util.L;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -140,6 +141,7 @@ public class HarCaptureFilter extends HttpsAwareFiltersAdapter {
 
     @Override
     public InetSocketAddress proxyToServerResolutionStarted(String resolvingServerHostAndPort) {
+        L.i("proxyToServerResolutionStarted");
         dnsResolutionStartedNanos = System.nanoTime();
         if (connectionQueuedNanos > 0L) {
             harEntry.getTimings().setBlocked(dnsResolutionStartedNanos - connectionQueuedNanos, TimeUnit.NANOSECONDS);
@@ -151,6 +153,7 @@ public class HarCaptureFilter extends HttpsAwareFiltersAdapter {
 
     @Override
     public void proxyToServerResolutionFailed(String hostAndPort) {
+        L.i("proxyToServerResolutionFailed");
         HarResponse response = HarCaptureUtil.createHarResponseForFailure();
         harEntry.setResponse(response);
         response.setError(HarCaptureUtil.getResolutionFailedErrorMessage(hostAndPort));
@@ -162,6 +165,7 @@ public class HarCaptureFilter extends HttpsAwareFiltersAdapter {
 
     @Override
     public void proxyToServerResolutionSucceeded(String serverHostAndPort, InetSocketAddress resolvedRemoteAddress) {
+        L.i("proxyToServerResolutionSucceeded");
         long dnsResolutionFinishedNanos = System.nanoTime();
         if (dnsResolutionStartedNanos > 0L) {
             harEntry.getTimings().setDns(dnsResolutionFinishedNanos - dnsResolutionStartedNanos, TimeUnit.NANOSECONDS);
@@ -178,16 +182,19 @@ public class HarCaptureFilter extends HttpsAwareFiltersAdapter {
 
     @Override
     public void proxyToServerConnectionQueued() {
+        L.i("proxyToServerConnectionQueued");
         this.connectionQueuedNanos = System.nanoTime();
     }
 
     @Override
     public void proxyToServerConnectionStarted() {
+        L.i("proxyToServerConnectionStarted");
         this.connectionStartedNanos = System.nanoTime();
     }
 
     @Override
     public void proxyToServerConnectionFailed() {
+        L.i("proxyToServerConnectionFailed");
         HarResponse response = HarCaptureUtil.createHarResponseForFailure();
         harEntry.setResponse(response);
 
@@ -201,6 +208,7 @@ public class HarCaptureFilter extends HttpsAwareFiltersAdapter {
 
     @Override
     public void proxyToServerConnectionSucceeded(ChannelHandlerContext serverCtx) {
+        L.i("proxyToServerConnectionSucceeded");
         long connectionSucceededTimeNanos = System.nanoTime();
 
         // make sure the previous timestamp was captured, to avoid setting an absurd value in the har (see serverToProxyResponseReceiving())
@@ -213,6 +221,7 @@ public class HarCaptureFilter extends HttpsAwareFiltersAdapter {
 
     @Override
     public void proxyToServerRequestSending() {
+        L.i("proxyToServerRequestSending");
         this.sendStartedNanos = System.nanoTime();
 
         if (!addressResolved) {
@@ -222,6 +231,7 @@ public class HarCaptureFilter extends HttpsAwareFiltersAdapter {
 
     @Override
     public void proxyToServerRequestSent() {
+        L.i("proxyToServerRequestSent");
         this.sendFinishedNanos = System.nanoTime();
 
         // make sure the previous timestamp was captured, to avoid setting an absurd value in the har (see serverToProxyResponseReceiving())
@@ -234,6 +244,7 @@ public class HarCaptureFilter extends HttpsAwareFiltersAdapter {
 
     @Override
     public void serverToProxyResponseReceiving() {
+        L.i("serverToProxyResponseReceiving");
         this.responseReceiveStartedNanos = System.nanoTime();
 
         if (sendFinishedNanos > 0L && sendFinishedNanos < responseReceiveStartedNanos) {
@@ -245,6 +256,7 @@ public class HarCaptureFilter extends HttpsAwareFiltersAdapter {
 
     @Override
     public void serverToProxyResponseReceived() {
+        L.i("serverToProxyResponseReceived");
         long responseReceivedNanos = System.nanoTime();
 
         if (responseReceiveStartedNanos > 0L) {
@@ -322,17 +334,6 @@ public class HarCaptureFilter extends HttpsAwareFiltersAdapter {
 
         captureResponseMimeType(httpResponse);
 
-//        if (dataToCapture.contains(CaptureType.RESPONSE_COOKIES)) {
-//            captureResponseCookies(httpResponse);
-//        }
-//
-//        if (dataToCapture.contains(CaptureType.RESPONSE_HEADERS)) {
-//            captureResponseHeaders(httpResponse);
-//        }
-//
-//        if (BrowserMobHttpUtil.isRedirect(httpResponse)) {
-//            captureRedirectUrl(httpResponse);
-//        }
     }
 
     protected void captureResponseHeaderSize(HttpResponse httpResponse) {

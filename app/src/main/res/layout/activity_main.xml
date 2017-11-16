@@ -15,4 +15,16 @@
         android:gravity="center"
         android:text="Hello World!"
         android:textColor="@android:color/white"/>
+
+    <TextView
+        android:id="@+id/tv_print_log"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_below="@+id/tv"
+        android:layout_centerVertical="true"
+        android:layout_marginTop="10dp"
+        android:background="@android:color/holo_blue_light"
+        android:gravity="center"
+        android:text="Print Log!"
+        android:textColor="@android:color/white"/>
 </RelativeLayout>

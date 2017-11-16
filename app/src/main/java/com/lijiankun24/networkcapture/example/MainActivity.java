@@ -6,6 +6,10 @@ import android.util.Log;
 import android.view.View;
 
 import com.lijiankun24.networkcapture.library.NetworkProxyManager;
+import com.lijiankun24.networkcapture.library.har.HarEntry;
+import com.lijiankun24.networkcapture.library.har.HarLog;
+import com.lijiankun24.networkcapture.library.har.HarTimings;
+import com.lijiankun24.networkcapture.library.util.L;
 
 import java.io.IOException;
 
@@ -39,6 +43,23 @@ public class MainActivity extends AppCompatActivity {
                 okhttp();
             }
         });
+        findViewById(R.id.tv_print_log).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                printLog();
+            }
+        });
+    }
+
+    private void printLog() {
+        HarLog harLog = NetworkProxyManager.getInstance().getHarLog();
+        for (HarEntry entry : harLog.getEntries()) {
+            HarTimings timings = entry.getTimings();
+            L.i("getDns time is     " + timings.getDns());
+            L.i("getConnect time is " + timings.getConnect());
+            L.i("getSend time is    " + timings.getSend());
+            L.i("getReceive time is " + timings.getReceive());
+        }
     }
 
     private void okhttp() {
