@@ -30,6 +30,7 @@ public class MainActivity extends AppCompatActivity {
         mHttpClient = new OkHttpClient();
         initProxy();
         initView();
+
     }
 
     private void initProxy() {
@@ -64,6 +65,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void okhttp() {
         Request request = new Request.Builder()
+//                .url("https://www.baidu.com")
                 .url("http://music.qq.com/musicbox/shop/v3/data/hit/hit_all.js")
                 .build();
         mHttpClient.newCall(request)

@@ -7,8 +7,6 @@ import com.lijiankun24.networkcapture.library.filter.HarCaptureFilter;
 import com.lijiankun24.networkcapture.library.filter.HttpConnectHarCaptureFilter;
 import com.lijiankun24.networkcapture.library.har.Har;
 import com.lijiankun24.networkcapture.library.har.HarLog;
-import com.lijiankun24.networkcapture.library.har.HarNameVersion;
-import com.lijiankun24.networkcapture.library.har.HarPage;
 import com.lijiankun24.networkcapture.library.util.L;
 
 import org.littleshoot.proxy.HttpFilters;
@@ -49,10 +47,6 @@ public class BrowserMobProxyServer implements BrowserMobProxy {
     public List<HttpFiltersSource> getFilterFactories() {
         return filterFactories;
     }
-
-    private static final HarNameVersion HAR_CREATOR_VERSION = new HarNameVersion("BrowserMob Proxy", BrowserMobProxyUtil.getVersionString());
-
-    private volatile HarPage currentHarPage;
 
     private volatile Har har;
 
@@ -116,7 +110,7 @@ public class BrowserMobProxyServer implements BrowserMobProxy {
 
     @Override
     public Har newHar(String initialPageRef, String initialPageTitle) {
-        this.har = new Har(new HarLog(HAR_CREATOR_VERSION, this));
+        this.har = new Har(new HarLog());
         addHarCaptureFilter();
         harPageCount.set(0);
         newPage(initialPageRef, initialPageTitle);
@@ -146,27 +140,6 @@ public class BrowserMobProxyServer implements BrowserMobProxy {
 
         Har endOfPageHar = null;
 
-        if (currentHarPage != null) {
-            String currentPageRef = currentHarPage.getId();
-            // end the previous page, so that page-wide timings are populated
-            endPage();
-            // the interface requires newPage() to return the Har as it was immediately after the previous page was ended.
-            endOfPageHar = BrowserMobProxyUtil.copyHarThroughPageRef(har, currentPageRef);
-        }
-
-        if (pageRef == null) {
-            pageRef = "Page " + harPageCount.getAndIncrement();
-        }
-
-        if (pageTitle == null) {
-            pageTitle = pageRef;
-        }
-
-        HarPage newPage = new HarPage(pageRef, pageTitle);
-        har.getLog().addPage(newPage);
-
-        currentHarPage = newPage;
-
         return endOfPageHar;
     }
 
@@ -179,19 +152,6 @@ public class BrowserMobProxyServer implements BrowserMobProxy {
         if (har == null) {
             throw new IllegalStateException("No HAR exists for this proxy. Use newHar() to create a new HAR.");
         }
-
-        HarPage previousPage = this.currentHarPage;
-        this.currentHarPage = null;
-
-        if (previousPage == null) {
-            return;
-        }
-
-        previousPage.getPageTimings().setOnLoad(new Date().getTime() - previousPage.getStartedDateTime().getTime());
-    }
-
-    public HarPage getCurrentHarPage() {
-        return currentHarPage;
     }
 
     protected void addHarCaptureFilter() {
@@ -217,7 +177,7 @@ public class BrowserMobProxyServer implements BrowserMobProxy {
             public HttpFilters filterRequest(HttpRequest originalRequest, ChannelHandlerContext ctx) {
                 Har har = getHar();
                 if (har != null && ProxyUtils.isCONNECT(originalRequest)) {
-                    return new HttpConnectHarCaptureFilter(originalRequest, ctx, har, getCurrentHarPage() == null ? null : getCurrentHarPage().getId());
+                    return new HttpConnectHarCaptureFilter(originalRequest, ctx, har);
                 } else {
                     return null;
                 }

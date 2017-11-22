@@ -63,7 +63,7 @@ public class HarCaptureFilter extends HttpsAwareFiltersAdapter {
         super(originalRequest, ctx);
         this.har = har;
         this.clientAddress = (InetSocketAddress) ctx.channel().remoteAddress();
-        harEntry = new HarEntry("pageref");
+        harEntry = new HarEntry();
     }
 
     @Override

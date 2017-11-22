@@ -10,9 +10,6 @@ public class Har {
 
     private volatile HarLog log;
 
-    public Har() {
-    }
-
     public Har(HarLog log) {
         this.log = log;
     }

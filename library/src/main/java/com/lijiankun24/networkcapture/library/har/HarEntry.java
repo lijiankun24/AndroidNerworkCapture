@@ -4,29 +4,15 @@ import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 public class HarEntry {
-    private volatile String pageref;
     private volatile Date startedDateTime;
     private volatile HarRequest request;
     private volatile HarResponse response;
-    private volatile HarCache cache = new HarCache();
     private volatile HarTimings timings = new HarTimings();
     private volatile String serverIPAddress;
     private volatile String connection;
     private volatile String comment = "";
 
     public HarEntry() {
-    }
-
-    public HarEntry(String pageref) {
-        this.pageref = pageref;
-    }
-
-    public String getPageref() {
-        return pageref;
-    }
-
-    public void setPageref(String pageref) {
-        this.pageref = pageref;
     }
 
     public Date getStartedDateTime() {
@@ -37,31 +23,10 @@ public class HarEntry {
         this.startedDateTime = startedDateTime;
     }
 
-    /**
-     * Retrieves the time for this HarEntry in milliseconds. To retrieve the time in another time unit, use {@link #getTime(TimeUnit)}.
-     * Rather than storing the time directly, calculate the time from the HarTimings as required in the HAR spec.
-     * From <a href="https://dvcs.w3.org/hg/webperf/raw-file/tip/specs/HAR/Overview.html">https://dvcs.w3.org/hg/webperf/raw-file/tip/specs/HAR/Overview.html</a>,
-     * section <code>4.2.16 timings</code>:
-     * <pre>
-     * Following must be true in case there are no -1 values (entry is an object in log.entries) :
-     *
-     * entry.time == entry.timings.blocked + entry.timings.dns +
-     * entry.timings.connect + entry.timings.send + entry.timings.wait +
-     * entry.timings.receive;
-     * </pre>
-     *
-     * @return time for this HAR entry, in milliseconds
-     */
     public long getTime() {
         return getTime(TimeUnit.MILLISECONDS);
     }
 
-    /**
-     * Retrieve the time for this HarEntry in the specified timeUnit. See {@link #getTime()} for details.
-     *
-     * @param timeUnit units of time to return
-     * @return time for this har entry
-     */
     public long getTime(TimeUnit timeUnit) {
         HarTimings timings = getTimings();
         if (timings == null) {
@@ -110,14 +75,6 @@ public class HarEntry {
 
     public void setResponse(HarResponse response) {
         this.response = response;
-    }
-
-    public HarCache getCache() {
-        return cache;
-    }
-
-    public void setCache(HarCache cache) {
-        this.cache = cache;
     }
 
     public HarTimings getTimings() {

@@ -63,8 +63,6 @@ public class HttpConnectHarCaptureFilter extends HttpsAwareFiltersAdapter {
 
     private final InetSocketAddress clientAddress;
 
-    private final String currentPageRef;
-
     private volatile Date requestStartTime;
 
     private volatile HttpRequest modifiedHttpRequest;
@@ -78,7 +76,7 @@ public class HttpConnectHarCaptureFilter extends HttpsAwareFiltersAdapter {
                     .<InetSocketAddress, HttpConnectTiming>build()
                     .asMap();
 
-    public HttpConnectHarCaptureFilter(HttpRequest originalRequest, ChannelHandlerContext ctx, Har har, String currentPageRef) {
+    public HttpConnectHarCaptureFilter(HttpRequest originalRequest, ChannelHandlerContext ctx, Har har) {
         super(originalRequest, ctx);
 
         if (har == null) {
@@ -88,7 +86,6 @@ public class HttpConnectHarCaptureFilter extends HttpsAwareFiltersAdapter {
         if (!ProxyUtils.isCONNECT(originalRequest)) {
             throw new IllegalStateException("Attempted HTTP CONNECT har capture on non-HTTP CONNECT request");
         }
-        this.currentPageRef = currentPageRef;
         this.har = har;
         clientAddress = (InetSocketAddress) ctx.channel().remoteAddress();
         httpConnectTiming = new HttpConnectTiming();
@@ -148,7 +145,7 @@ public class HttpConnectHarCaptureFilter extends HttpsAwareFiltersAdapter {
     }
 
     private HarEntry createHarEntryForFailedCONNECT(String errorMessage) {
-        HarEntry harEntry = new HarEntry(currentPageRef);
+        HarEntry harEntry = new HarEntry();
         harEntry.setStartedDateTime(requestStartTime);
 
         HarRequest request = createRequestForFailedConnect(originalRequest);
